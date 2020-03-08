@@ -1,0 +1,393 @@
+<!doctype html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <div th:replace="header :: header"></div>
+</head>
+<body>
+<div class="container">
+    <div th:replace="nav :: nav"></div>
+</div>
+
+<div class="container mt-2" id="wrapper">
+    <h6 class="mt-4 ml-2" style="color: royalblue;">
+        <i class="far fa-grin-squint-tears" style="font-size: xx-large"></i>图书列表
+    </h6>
+    <div class="row" style="height: auto !important;" >
+        <div class="col-12 col-lg-9">
+            <div class="form-row mb-1">
+                <div class="col-2">
+                    <i class="fas fa-th-large mr-1" style="color: #bb1542;"></i>类别
+                </div>
+                <div class="col-3" data-column="0">
+                    <select class="form-control form-control-sm filter" id="filter_0">
+                        <option></option>
+                    </select>
+                </div>
+                <div class="col-2"></div>
+                <div class="col-2">
+                    <i class="fas fa-book mr-1" style="color: #bb1542;"></i>书名</div>
+                <div class="col-3" data-column="1">
+                    <input type="text" class="form-control form-control-sm filter" id="filter_1"/>
+                </div>
+            </div>
+
+            <div class="form-row mb-1">
+                <div class="col-2">
+                    <i class="fas fa-hashtag mr-1" style="color: #bb1542;"></i>ISBN</div>
+                <div class="col-3" data-column="2">
+                    <input type="text" class="form-control form-control-sm filter" id="filter_2"/>
+                </div>
+                <div class="col-2"></div>
+                <div class="col-2">
+                    <i class="fas fa-user mr-1" style="color: #bb1542;"></i>作者
+                </div>
+                <div class="col-3" data-column="3">
+                    <input type="text" class="form-control form-control-sm filter" id="filter_3"/>
+                </div>
+            </div>
+        </div>
+        <div class="container mt-2" style="height: 430px;">
+            <table id="book_table" class="table table-sm table-striped table-bordered" style="width: 100%;">
+                <thead style="color: #f96d15">
+                <tr>
+                    <th>类别</th>
+                    <th>书名</th>
+                    <th>ISBN</th>
+                    <th>作者</th>
+                    <th>数量</th>
+                    <th>剩余数量</th>
+                </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="container"  style="height: auto !important;">
+            <button class="btn btn-sm btn-outline-primary mt-2 mr-1" onclick="showAddBookDlg();">增加</button>
+            <button id="editBtn" class="btn btn-sm btn-outline-primary mt-2 mr-1" onclick="showEditBookDlg();">修改</button>
+            <button id="removeBtn" class="btn btn-sm btn-outline-primary mt-2 mr-1" data-toggle="modal" data-target="#confirmDlg">删除</button>
+        </div>
+
+        <div class="modal fade" id="addBookDlg" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <form id="addBookForm" action="javascript: addBook()" autocomplete="off">
+                        <div class="modal-header">
+                            <h5 class="modal-title">增加图书</h5>
+                            <button type="button" class="close" data-dismiss="modal">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label>类别</label>
+                                <select name="categoryId" class="form-control" required="required">
+                                    <option></option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>ISBN号码</label>
+                                <input name="isbn" class="form-control" required="required"/>
+                                <button type="button" name="isbnBtn" class="btn btn-sm btn-outline-primary">获取图书信息</button>
+                            </div>
+
+                            <div class="form-group">
+                                <label>名称</label>
+                                <input name="name" class="form-control" required="required"/>
+                            </div>
+                            <div class="form-group">
+                                <label>作者</label>
+                                <input name="author" class="form-control" required="required"/>
+                            </div>
+                            <div class="form-group">
+                                <label>数量</label>
+                                <input type="number" name="quantity" class="form-control" max="99" required="required"/>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" data-dismiss="modal">取消</button>
+                            <button type="submit" class="btn btn-sm btn-outline-primary">增加</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="editBookDlg" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <form id="editBookForm" action="javascript: editBook()" autocomplete="off">
+                        <div class="modal-header">
+                            <h5 class="modal-title">修改图书</h5>
+                            <button type="button" class="close" data-dismiss="modal">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label>类别</label>
+                                <select name="categoryId" class="form-control" required="required">
+                                    <option></option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>ISBN号码</label>
+                                <input name="isbn" class="form-control" required="required"/>
+                                <button type="button" name="isbnBtn" class="btn btn-sm btn-outline-primary">获取图书信息</button>
+                            </div>
+                            <div class="form-group">
+                                <label>名称</label>
+                                <input name="name" class="form-control" required="required"/>
+                            </div>
+                            <div class="form-group">
+                                <label>作者</label>
+                                <input name="author" class="form-control" required="required"/>
+                            </div>
+                            <div class="form-group">
+                                <label>数量</label>
+                                <input type="number" name="quantity" class="form-control" max="99" required="required"/>
+                            </div>
+                            <div class="form-group">
+                                <label>剩余数量</label>
+                                <input type="number" name="remainingQuantity" class="form-control" max="99" required="required"/>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" data-dismiss="modal">取消</button>
+                            <button type="submit" class="btn btn-sm btn-outline-primary">修改</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="confirmDlg" tabindex="-1" role="dialog" aria-labelledby="confirmDlg" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">删除图书</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        确定删除吗
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" data-dismiss="modal">取消</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary" data-dismiss="modal" onclick="deleteBook();">确认</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            let selectedBookIndex;
+            const addBookForm = $("#addBookForm");
+            const editBookForm = $("#editBookForm");
+
+            const bookTable = $('#book_table').DataTable({
+                select: true,
+                info: false,
+                lengthChange: false,
+                language: {
+                    paginate: {
+                        previous: '前一页',
+                        next: '后一页'
+                    },
+                    emptyTable: '无数据',
+                    zeroRecords: '无数据'
+                },
+                ajax: function (data, callback, settings) {
+                    $.get({
+                        url: '/listBook',
+                        type: 'get',
+                        success: function (data, textStatus, jQxhr) {
+                            callback({
+                                data: data
+                            });
+                        }
+                    });
+                },
+                columns: [
+                    {data: 'category.name'},
+                    {data: 'name'},
+                    {data: 'isbn'},
+                    {data: 'author'},
+                    {data: 'quantity'},
+                    {data: 'remainingQuantity'}
+                ]
+            });
+
+            $(document).ready(function () {
+                $('#book_table_filter').hide();
+                $('#editBtn').hide();
+                $('#removeBtn').hide();
+
+                bookTable.on('select', function (e, dt, type, indexes) {
+                    $('#editBtn').show();
+
+                    if (bookTable.rows(indexes).data().pluck('quantity')[0] === bookTable.rows(indexes).data().pluck('remainingQuantity')[0]) {
+                        $('#removeBtn').show();
+                    }
+
+                    selectedBookIndex = indexes;
+                });
+
+                bookTable.on('deselect', function (e, dt, type, indexes) {
+                    $('#editBtn').hide();
+                    $('#removeBtn').hide();
+                });
+
+                bookTable.on('page.dt', function () {
+                    $('#editBtn').hide();
+                    $('#removeBtn').hide();
+                });
+
+                $('input.filter').on('keyup click', function() {
+                    const index = $(this).parents('div').attr('data-column');
+                    bookTable.column(index).search($('#filter_' + index).val(), false, true).draw();
+                } );
+
+                $('select.filter').on('change', function() {
+                    const index = $(this).parents('div').attr('data-column');
+                    bookTable.column(index).search($('#filter_' + index).val(), false, true).draw();
+                });
+
+                $.get('/listBookCategory', function (data) {
+                    data.forEach(item => {
+                        addBookForm.find('[name=categoryId]').append('<option value="' + item.id + '">' + item.name + '</option>');
+                        editBookForm.find('[name=categoryId]').append('<option value="' + item.id + '">' + item.name + '</option>');
+                        $('#filter_0').append('<option value="' + item.name + '">' + item.name + '</option>');
+                    });
+                });
+
+                addBookForm.find('[name=isbnBtn]').click(function() {
+                    if (addBookForm.find('[name=isbn]').val() !== '') {
+                        $.get("/fetchIsbn/" + addBookForm.find('[name=isbn]').val(), function (data) {
+                            if (data.status === 0) {
+                                addBookForm.find('[name=name]').val(data.result.title);
+                                addBookForm.find('[name=author]').val(data.result.author);
+                            }
+                        });
+                    }
+                });
+
+                editBookForm.find('[name=isbnBtn]').click(function() {
+                    if (editBookForm.find('[name=isbn]').val() !== '') {
+                        $.get("/fetchIsbn/" + editBookForm.find('[name=isbn]').val(), function (data) {
+                            if (data.status === 0) {
+                                editBookForm.find('[name=name]').val(data.result.title);
+                                editBookForm.find('[name=author]').val(data.result.author);
+                            }
+                        });
+                    }
+                });
+            });
+
+            function showAddBookDlg() {
+                addBookForm.find('[name=categoryId]').val('');
+                addBookForm.find('[name=name]').val('');
+                addBookForm.find('[name=isbn]').val('');
+                addBookForm.find('[name=author]').val('');
+                addBookForm.find('[name=quantity]').val('');
+                $('#addBookDlg').modal();
+            }
+
+            function addBook() {
+                $.ajax({
+                    url: '/saveBook',
+                    contentType: 'application/json',
+                    type: 'POST',
+                    data: JSON.stringify({
+                        category: {
+                            id: addBookForm.find('[name=categoryId]').val()
+                        },
+                        name: addBookForm.find('[name=name]').val(),
+                        isbn: addBookForm.find('[name=isbn]').val(),
+                        author: addBookForm.find('[name=author]').val(),
+                        quantity: addBookForm.find('[name=quantity]').val(),
+                        remainingQuantity: addBookForm.find('[name=quantity]').val()
+                    }),
+                    success: function(data, status) {
+                        $('#editBtn').hide();
+                        $('#removeBtn').hide();
+                        $('#addBookDlg').modal('hide');
+                        bookTable.ajax.reload();
+                    },
+                    error: function(data, status) {
+                        alert(data.responseJSON.message);
+                    }
+                });
+            }
+
+            function showEditBookDlg() {
+                editBookForm.find('[name=categoryId]').val(bookTable.rows(selectedBookIndex).data().pluck('category')[0].id);
+                editBookForm.find('[name=name]').val(bookTable.rows(selectedBookIndex).data().pluck('name')[0]);
+                editBookForm.find('[name=isbn]').val(bookTable.rows(selectedBookIndex).data().pluck('isbn')[0]);
+                editBookForm.find('[name=author]').val(bookTable.rows(selectedBookIndex).data().pluck('author')[0]);
+                editBookForm.find('[name=quantity]').val(bookTable.rows(selectedBookIndex).data().pluck('quantity')[0]);
+                editBookForm.find('[name=remainingQuantity]').val(bookTable.rows(selectedBookIndex).data().pluck('remainingQuantity')[0]);
+                $('#editBookDlg').modal();
+            }
+
+            function editBook() {
+                $.ajax({
+                    url: "/saveBook",
+                    contentType: "application/json",
+                    type: "POST",
+                    data: JSON.stringify({
+                        id: bookTable.rows(selectedBookIndex).data().pluck('id')[0],
+                        category: {
+                            id: editBookForm.find('[name=categoryId]').val()
+                        },
+                        name: editBookForm.find('[name=name]').val(),
+                        isbn: editBookForm.find('[name=isbn]').val(),
+                        author: editBookForm.find('[name=author]').val(),
+                        quantity: editBookForm.find('[name=quantity]').val(),
+                        remainingQuantity: editBookForm.find('[name=remainingQuantity]').val()
+                    }),
+                    success: function(data, status) {
+                        $('#editBtn').hide();
+                        $('#removeBtn').hide();
+                        $('#editBookDlg').modal('hide');
+                        bookTable.ajax.reload();
+                    },
+                    error: function(data, status) {
+                        alert(data.responseJSON.message);
+                    }
+                });
+            }
+
+            function deleteBook() {
+                $.ajax({
+                    url: '/deleteBook/' + bookTable.rows(selectedBookIndex).data().pluck('id')[0],
+                    type: 'DELETE',
+                    success: function(data, status) {
+                        bookTable.ajax.reload(null, false);
+                        $('#editBtn').hide();
+                        $('#removeBtn').hide();
+                    },
+                    error: function(data, status) {
+                        alert(data.responseJSON.message);
+                    }
+                });
+            }
+        </script>
+
+
+    </div>
+    </div>
+</div>
+
+<div class="container" >
+    <hr>
+</div>
+
+<div class="container" >
+    <div th:replace="footer :: footer"></div>
+</div>
+</body>
+</html>

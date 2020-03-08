@@ -1,0 +1,71 @@
+<!doctype html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <div th:replace="header :: header"></div>
+</head>
+<body>
+<div class="container">
+    <div th:replace="nav :: nav"></div>
+</div>
+
+<div class="container mt-2" style="height: 430px;">
+    <h6 class="mt-4 ml-2" style="color: royalblue;">
+        <i class="far fa-grin-squint-tears" style="font-size: xx-large"></i>图书申请列表
+    </h6>
+    <table id="bookRequest_table" class="table table-sm table-striped table-bordered" style="width: 100%;">
+        <thead>
+        <tr>
+            <th>书名</th>
+            <th>ISBN</th>
+            <th>作者</th>
+        </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    const bookRequestTable = $('#bookRequest_table').DataTable({
+        info: false,
+        lengthChange: false,
+        language: {
+            paginate: {
+                previous: '前一页',
+                next: '后一页'
+            },
+            emptyTable: '无数据',
+            zeroRecords: '无数据'
+        },
+        ajax: function (data, callback, settings) {
+            $.get({
+                url: '/listBookRequest',
+                type: 'get',
+                success: function (data, textStatus, jQxhr) {
+                    callback({
+                        data: data
+                    });
+                }
+            });
+        },
+        columns: [
+            {data: 'name'},
+            {data: 'isbn'},
+            {data: 'author'}
+        ]
+    });
+
+    $(document).ready(function () {
+        $('#bookRequest_table_filter').hide();
+    });
+</script>
+
+<div class="container" >
+    <hr>
+</div>
+
+<div class="container" >
+    <div th:replace="footer :: footer"></div>
+</div>
+</body>
+</html>

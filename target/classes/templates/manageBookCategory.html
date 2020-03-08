@@ -1,0 +1,241 @@
+<!doctype html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <div th:replace="header :: header"></div>
+</head>
+<body>
+<div class="container">
+    <div th:replace="nav :: nav"></div>
+</div>
+
+<div class="container mt-2" id="wrapper">
+    <h6 class="mt-4 ml-2" style="color: royalblue;">
+        <i class="far fa-grin-squint-tears" style="font-size: xx-large"></i>图书类别列表
+    </h6>
+    <div class="row" style="height: auto !important;" >
+        <div class="container mt-2" style="height: 430px;">
+            <table id="bookCategory_table" class="table table-sm table-striped table-bordered" style="width: 100%;">
+                <thead style="color: #f96d15">
+                <tr>
+                    <th>类别</th>
+                </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="container"  style="height: auto !important;">
+            <button class="btn btn-sm btn-outline-primary mt-2 mr-1" onclick="showAddBookCategoryDlg();">增加</button>
+            <button id="editBtn" class="btn btn-sm btn-outline-primary mt-2 mr-1" onclick="showEditBookCategoryDlg();">修改</button>
+<!--            <button id="removeBtn" class="btn btn-sm btn-outline-primary mt-2 mr-1" data-toggle="modal" data-target="#confirmDlg">删除</button>-->
+        </div>
+
+        <div class="modal fade" id="addBookCategoryDlg" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <form id="addBookCategoryForm" action="javascript: addBookCategory()" autocomplete="off">
+                        <div class="modal-header">
+                            <h5 class="modal-title">增加图书类别</h5>
+                            <button type="button" class="close" data-dismiss="modal">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label>类别</label>
+                                <input name="name" class="form-control" required="required"/>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" data-dismiss="modal">取消</button>
+                            <button type="submit" class="btn btn-sm btn-outline-primary">增加</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="editBookCategoryDlg" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <form id="editBookCategoryForm" action="javascript: editBookCategory()" autocomplete="off">
+                        <div class="modal-header">
+                            <h5 class="modal-title">修改图书类别</h5>
+                            <button type="button" class="close" data-dismiss="modal">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label>类别</label>
+                                <input name="name" class="form-control" required="required"/>
+                            </div>
+
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" data-dismiss="modal">取消</button>
+                            <button type="submit" class="btn btn-sm btn-outline-primary">修改</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="confirmDlg" tabindex="-1" role="dialog" aria-labelledby="confirmDlg" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">删除图书类别</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        确定删除吗
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" data-dismiss="modal">取消</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary" data-dismiss="modal" onclick="deleteBookCategory();">确认</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            let selectedBookCategoryIndex;
+            const addBookCategoryForm = $("#addBookCategoryForm");
+            const editBookCategoryForm = $("#editBookCategoryForm");
+
+            const bookCategoryTable = $('#bookCategory_table').DataTable({
+                select: true,
+                info: false,
+                lengthChange: false,
+                language: {
+                    paginate: {
+                        previous: '前一页',
+                        next: '后一页'
+                    },
+                    emptyTable: '无数据',
+                    zeroRecords: '无数据'
+                },
+                ajax: function (data, callback, settings) {
+                    $.get({
+                        url: '/listBookCategory',
+                        type: 'get',
+                        success: function (data, textStatus, jQxhr) {
+                            callback({
+                                data: data
+                            });
+                        }
+                    });
+                },
+                columns: [
+                    {data: 'name'}
+                ]
+            });
+
+            $(document).ready(function () {
+                $('#bookCategory_table_filter').hide();
+                $('#editBtn').hide();
+                $('#removeBtn').hide();
+
+                bookCategoryTable.on('select', function (e, dt, type, indexes) {
+                    $('#editBtn').show();
+
+                    if (bookCategoryTable.rows(indexes).data().pluck('quantity')[0] === bookCategoryTable.rows(indexes).data().pluck('remainingQuantity')[0]) {
+                        $('#removeBtn').show();
+                    }
+
+                    selectedBookCategoryIndex = indexes;
+                });
+
+                bookCategoryTable.on('deselect', function (e, dt, type, indexes) {
+                    $('#editBtn').hide();
+                    $('#removeBtn').hide();
+                });
+
+                bookCategoryTable.on('page.dt', function () {
+                    $('#editBtn').hide();
+                    $('#removeBtn').hide();
+                });
+            });
+
+            function showAddBookCategoryDlg() {
+                addBookCategoryForm.find('[name=name]').val('');
+                $('#addBookCategoryDlg').modal();
+            }
+
+            function addBookCategory() {
+                $.ajax({
+                    url: '/saveBookCategory',
+                    contentType: 'application/json',
+                    type: 'POST',
+                    data: JSON.stringify({
+                        name: addBookCategoryForm.find('[name=name]').val()
+                    }),
+                    success: function(data, status) {
+                        $('#editBtn').hide();
+                        $('#removeBtn').hide();
+                        $('#addBookCategoryDlg').modal('hide');
+                        bookCategoryTable.ajax.reload();
+                    },
+                    error: function(data, status) {
+                        alert(data.responseJSON.message);
+                    }
+                });
+            }
+
+            function showEditBookCategoryDlg() {
+                editBookCategoryForm.find('[name=name]').val(bookCategoryTable.rows(selectedBookCategoryIndex).data().pluck('name')[0]);
+                $('#editBookCategoryDlg').modal();
+            }
+
+            function editBookCategory() {
+                $.ajax({
+                    url: "/saveBookCategory",
+                    contentType: "application/json",
+                    type: "POST",
+                    data: JSON.stringify({
+                        id: bookCategoryTable.rows(selectedBookCategoryIndex).data().pluck('id')[0],
+                        name: editBookCategoryForm.find('[name=name]').val()
+                    }),
+                    success: function(data, status) {
+                        $('#editBtn').hide();
+                        $('#removeBtn').hide();
+                        $('#editBookCategoryDlg').modal('hide');
+                        bookCategoryTable.ajax.reload();
+                    },
+                    error: function(data, status) {
+                        alert(data.responseJSON.message);
+                    }
+                });
+            }
+
+            // function deleteBookCategory() {
+            //     $.ajax({
+            //         url: '/deleteBookCategory/' + bookCategoryTable.rows(selectedBookCategoryIndex).data().pluck('id')[0],
+            //         type: 'DELETE',
+            //         success: function(data, status) {
+            //             bookCategoryTable.ajax.reload(null, false);
+            //             $('#editBtn').hide();
+            //             $('#removeBtn').hide();
+            //         },
+            //         error: function(data, status) {
+            //             alert(data.responseJSON.message);
+            //         }
+            //     });
+            // }
+        </script>
+    </div>
+</div>
+
+<div class="container" >
+    <hr>
+</div>
+
+<div class="container" >
+    <div th:replace="footer :: footer"></div>
+</div>
+</body>
+</html>

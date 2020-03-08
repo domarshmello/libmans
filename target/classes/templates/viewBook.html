@@ -1,0 +1,126 @@
+<!doctype html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <div th:replace="header :: header"></div>
+</head>
+<body>
+<div class="container">
+    <div th:replace="nav :: nav"></div>
+</div>
+
+<div class="container mt-2">
+    <div class="col-12 col-lg-9">
+        <div class="form-row mb-1">
+            <div class="col-2">
+                <i class="fas fa-th-large mr-1" style="color: #bb1542;"></i>类别
+            </div>
+            <div class="col-3" data-column="0">
+                <select class="form-control form-control-sm filter" id="filter_0">
+                    <option></option>
+                </select>
+            </div>
+            <div class="col-2"></div>
+            <div class="col-2">
+                <i class="fas fa-book mr-1" style="color: #bb1542;"></i>书名</div>
+            <div class="col-3" data-column="1">
+                <input type="text" class="form-control form-control-sm filter" id="filter_1"/>
+            </div>
+        </div>
+
+        <div class="form-row mb-1">
+            <div class="col-2">
+                <i class="fas fa-hashtag mr-1" style="color: #bb1542;"></i>ISBN</div>
+            <div class="col-3" data-column="2">
+                <input type="text" class="form-control form-control-sm filter" id="filter_2"/>
+            </div>
+            <div class="col-2"></div>
+            <div class="col-2">
+                <i class="fas fa-user mr-1" style="color: #bb1542;"></i>作者
+            </div>
+            <div class="col-3" data-column="3">
+                <input type="text" class="form-control form-control-sm filter" id="filter_3"/>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-2" style="height: 430px;">
+    <table id="book_table" class="table table-sm table-striped table-bordered" style="width: 100%;">
+        <thead>
+        <tr>
+            <th>类别</th>
+            <th>书名</th>
+            <th>ISBN</th>
+            <th>作者</th>
+            <th>数量</th>
+            <th>剩余数量</th>
+        </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    const bookTable = $('#book_table').DataTable({
+        info: false,
+        lengthChange: false,
+        language: {
+            paginate: {
+                previous: '前一页',
+                next: '后一页'
+            },
+            emptyTable: '无数据',
+            zeroRecords: '无数据'
+        },
+        ajax: function (data, callback, settings) {
+            $.get({
+                url: '/listBook',
+                type: 'get',
+                success: function (data, textStatus, jQxhr) {
+                    callback({
+                        data: data
+                    });
+                }
+            });
+        },
+        columns: [
+            {data: 'category.name'},
+            {data: 'name'},
+            {data: 'isbn'},
+            {data: 'author'},
+            {data: 'quantity'},
+            {data: 'remainingQuantity'}
+        ]
+    });
+
+    $(document).ready(function () {
+        $('#book_table_filter').hide();
+
+        $('input.filter').on('keyup click', function() {
+            const index = $(this).parents('div').attr('data-column');
+            bookTable.column(index).search($('#filter_' + index).val(), false, true).draw();
+        } );
+
+        $('select.filter').on('change', function() {
+            const index = $(this).parents('div').attr('data-column');
+            bookTable.column(index).search($('#filter_' + index).val(), false, true).draw();
+        });
+
+        $.get('/listBookCategory', function (data) {
+            data.forEach(item => {
+                $('#filter_0').append('<option value="' + item.name + '">' + item.name + '</option>');
+            });
+        });
+    });
+</script>
+
+<div class="container" >
+    <hr>
+</div>
+
+<div class="container" >
+    <div th:replace="footer :: footer"></div>
+</div>
+</body>
+</html>

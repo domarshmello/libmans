@@ -1,0 +1,296 @@
+<!doctype html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <div th:replace="header :: header"></div>
+</head>
+<body>
+<div class="container">
+    <div th:replace="nav :: nav"></div>
+</div>
+
+<div class="container mt-2">
+    <div class="row">
+        <div class="col-2">
+            <table id="user_table" class="table table-sm table-striped table-bordered">
+                <thead>
+                <tr>
+                    <th>用户</th>
+                </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="col-10" id="operation_section">
+            <div class="row" style="height: 300px;">
+                <div class="col">
+                    <table id="rental_table" class="table table-sm table-striped table-bordered">
+                        <thead>
+                        <tr>
+                            <th>类别</th>
+                            <th>书名</th>
+                            <th>ISBN</th>
+                            <th>借书时间</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+
+                    <button id="returnBookBtn" class="btn btn-sm btn-outline-primary mt-2 mr-1">还书</button>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 col-lg-9">
+                    <div class="form-row mb-1">
+                        <div class="col-2">
+                            <i class="fas fa-th-large mr-1" style="color: #bb1542;"></i>类别
+                        </div>
+                        <div class="col-3" data-column="0">
+                            <select class="form-control form-control-sm filter" id="filter_0">
+                                <option></option>
+                            </select>
+                        </div>
+                        <div class="col-2"></div>
+                        <div class="col-2">
+                            <i class="fas fa-book mr-1" style="color: #bb1542;"></i>书名</div>
+                        <div class="col-3" data-column="1">
+                            <input type="text" class="form-control form-control-sm filter" id="filter_1"/>
+                        </div>
+                    </div>
+
+                    <div class="form-row mb-1">
+                        <div class="col-2">
+                            <i class="fas fa-hashtag mr-1" style="color: #bb1542;"></i>ISBN</div>
+                        <div class="col-3" data-column="2">
+                            <input type="text" class="form-control form-control-sm filter" id="filter_2"/>
+                        </div>
+                        <div class="col-2"></div>
+                        <div class="col-2">
+                            <i class="fas fa-user mr-1" style="color: #bb1542;"></i>作者
+                        </div>
+                        <div class="col-3" data-column="3">
+                            <input type="text" class="form-control form-control-sm filter" id="filter_3"/>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="container mt-2" style="height: 430px;">
+                    <table id="book_table" class="table table-sm table-striped table-bordered" style="width: 100%;">
+                        <thead>
+                        <tr>
+                            <th>类别</th>
+                            <th>书名</th>
+                            <th>ISBN</th>
+                            <th>作者</th>
+                            <th>数量</th>
+                            <th>剩余数量</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+
+                    <button id="rentBookBtn" class="btn btn-sm btn-outline-primary mt-2 mr-1">借书</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let selectedUserId = 0;
+    let selectedRentalId = 0;
+    let selectedBookId = 0;
+
+    const userTable = $('#user_table').DataTable({
+        info: false,
+        scrollY: 600,
+        scrollCollapse: true,
+        paging: false,
+        select: true,
+        searching: false,
+        ajax: function (data, callback, settings) {
+            $.get({
+                url: '/listUser',
+                type: 'get',
+                success: function (data, textStatus, jQxhr) {
+                    callback({
+                        data: data
+                    });
+                }
+            });
+        },
+        columns: [
+            {data: 'fullName'}
+        ]
+    });
+
+    const rentalTable = $('#rental_table').DataTable({
+        info: false,
+        scrollY: 200,
+        scrollCollapse: true,
+        paging: false,
+        select: true,
+        searching: false,
+        ajax: function (data, callback, settings) {
+            $.get({
+                url: '/listRental/' + selectedUserId + "?status=未归还",
+                type: 'get',
+                success: function (data, textStatus, jQxhr) {
+                    callback({
+                        data: data
+                    });
+                }
+            });
+        },
+        columns: [
+            {data: 'book.category.name'},
+            {data: 'book.name'},
+            {data: 'book.isbn'},
+            {data: 'rentDate'}
+        ]
+    });
+
+    const bookTable = $('#book_table').DataTable({
+        select: true,
+        info: false,
+        lengthChange: false,
+        language: {
+            paginate: {
+                previous: '前一页',
+                next: '后一页'
+            },
+            emptyTable: '无数据',
+            zeroRecords: '无数据'
+        },
+        ajax: function (data, callback, settings) {
+            $.get({
+                url: '/listBook',
+                type: 'get',
+                success: function (data, textStatus, jQxhr) {
+                    callback({
+                        data: data
+                    });
+                }
+            });
+        },
+        columns: [
+            {data: 'category.name'},
+            {data: 'name'},
+            {data: 'isbn'},
+            {data: 'author'},
+            {data: 'quantity'},
+            {data: 'remainingQuantity'}
+        ]
+    });
+
+    $(document).ready(function () {
+        $('#book_table_filter').hide();
+        $('#operation_section').hide();
+        $('#returnBookBtn').hide();
+        $('#rentBookBtn').hide();
+
+        userTable.on('select', function (e, dt, type, indexes) {
+            selectedUserId = userTable.rows(indexes).data().pluck('id')[0];
+            rentalTable.ajax.reload();
+            bookTable.ajax.reload();
+            $('#returnBookBtn').hide();
+            $('#rentBookBtn').hide();
+            $('#operation_section').show();
+        });
+
+        userTable.on('deselect', function (e, dt, type, indexes) {
+            $('#operation_section').hide();
+        });
+
+        rentalTable.on('select', function (e, dt, type, indexes) {
+            selectedRentalId = rentalTable.rows(indexes).data().pluck('id')[0];
+            $('#returnBookBtn').show();
+        });
+
+        rentalTable.on('deselect', function (e, dt, type, indexes) {
+            $('#returnBookBtn').hide();
+        });
+
+        bookTable.on('select', function (e, dt, type, indexes) {
+            selectedBookId = bookTable.rows(indexes).data().pluck('id')[0];
+
+            if (bookTable.rows(indexes).data().pluck('remainingQuantity')[0] > 0) {
+                $('#rentBookBtn').show();
+            }
+        });
+
+        bookTable.on('deselect', function (e, dt, type, indexes) {
+            $('#rentBookBtn').hide();
+        });
+
+        $('input.filter').on('keyup click', function() {
+            const index = $(this).parents('div').attr('data-column');
+            bookTable.column(index).search($('#filter_' + index).val(), false, true).draw();
+        } );
+
+        $('select.filter').on('change', function() {
+            const index = $(this).parents('div').attr('data-column');
+            bookTable.column(index).search($('#filter_' + index).val(), false, true).draw();
+        });
+
+        $.get('/listBookCategory', function (data) {
+            data.forEach(item => {
+                $('#filter_0').append('<option value="' + item.name + '">' + item.name + '</option>');
+            });
+        });
+
+        $('#returnBookBtn').click(function() {
+            $.ajax({
+                url: "/returnRental/" + selectedRentalId,
+                type: "DELETE",
+                success: function(data, status) {
+                    rentalTable.ajax.reload();
+                    bookTable.ajax.reload();
+                    $('#returnBookBtn').hide();
+                    $('#rentBookBtn').hide();
+                },
+                error: function(data, status) {
+                    alert(data.responseJSON.message);
+                }
+            });
+        });
+
+        $('#rentBookBtn').click(function() {
+            $.ajax({
+                url: "/makeRental",
+                contentType: "application/json",
+                type: "POST",
+                data: JSON.stringify({
+                    user: {
+                        id: selectedUserId
+                    },
+                    book: {
+                        id: selectedBookId
+                    }
+                }),
+                success: function(data, status) {
+                    $('#returnBookBtn').hide();
+                    $('#rentBookBtn').hide();
+                    rentalTable.ajax.reload();
+                    bookTable.ajax.reload();
+                },
+                error: function(data, status) {
+                    alert(data.responseJSON.message);
+                }
+            });
+        });
+    });
+</script>
+
+<div class="container" >
+    <hr>
+</div>
+
+<div class="container" >
+    <div th:replace="footer :: footer"></div>
+</div>
+</body>
+</html>
